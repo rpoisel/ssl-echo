@@ -5,6 +5,8 @@
 
 #include <unistd.h>
 #include <signal.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <errno.h>
 
 #include "util_socket.h"
@@ -13,7 +15,7 @@
 
 /* prototypes */
 static void sigIntHandler(int sig);
-static void connection_handler(int conn_fd);
+static void connection_handler();
 static ssize_t recvline(int fd, char* buf, size_t buf_len);
 static ssize_t sendbuf(int fd, const char* buf, size_t buf_len);
 
@@ -60,7 +62,7 @@ int main(int argc, char* argv[])
             perror("accept");
             exit(EXIT_FAILURE);
         }
-        connection_handler(socket_conn);
+        connection_handler();
     }
 
     return EXIT_SUCCESS;
@@ -80,7 +82,7 @@ static void sigIntHandler(int sig)
     exit(EXIT_SUCCESS);
 }
 
-static void connection_handler(int conn_fd)
+static void connection_handler()
 {
     char buffer[MAX_STR_LEN] = { '\0' };
     unsigned cnt = -1;

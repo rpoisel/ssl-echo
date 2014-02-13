@@ -1,7 +1,13 @@
 CC := gcc
-CFLAGS := $(shell dpkg-buildflags --get CFLAGS) \
-    -W -Wall -g
-LDFLAGS := $(shell dpkg-buildflags --get LDFLAGS)
+
+# Debian based systems only
+#CFLAGS := $(shell dpkg-buildflags --get CFLAGS) \
+#    -W -Wall -g
+#LDFLAGS := $(shell dpkg-buildflags --get LDFLAGS)
+# all other systems
+CFLAGS := -W -Wall -g
+LDFLAGS := 
+
 RM := rm
 
 BIN_NOSSL := echo_server
