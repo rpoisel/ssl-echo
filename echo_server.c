@@ -4,17 +4,16 @@
 #include <ctype.h>
 
 #include <unistd.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <arpa/inet.h>
 #include <signal.h>
 #include <errno.h>
 
+#include "util_socket.h"
+
 #define MAX_STR_LEN 1024
-#define QUEUE_LEN 1024
 
 /* prototypes */
 static void sigIntHandler(int sig);
+static void connection_handler(int conn_fd);
 static ssize_t recvline(int fd, char* buf, size_t buf_len);
 static ssize_t sendbuf(int fd, const char* buf, size_t buf_len);
 
@@ -26,13 +25,7 @@ int socket_conn = -1;
 int main(int argc, char* argv[])
 {
     short port = -1;
-    char buffer[MAX_STR_LEN] = { '\0' };
     char* endptr = NULL;
-    struct sockaddr_in serveraddr;
-    unsigned cnt = -1;
-    int tr = -1;
-
-    memset(&serveraddr, 0, sizeof(serveraddr));
 
     /* command line arguments */
     if (argc == 2)
@@ -41,92 +34,33 @@ int main(int argc, char* argv[])
         if (*endptr)
         {
             fprintf(stderr, "Invalid port number.\n");
-            return EXIT_FAILURE;
+            exit(EXIT_FAILURE);
         }
     }
     else
     {
-        fprintf(stderr, "Usage: %s <port-number>\n",
-                argv[0]);
-        return EXIT_FAILURE;
+        fprintf(stderr, "Usage: %s <port-number>\n", argv[0]);
+        exit(EXIT_FAILURE);
     }
 
     /* signal handler to shutdown clearly */
     if (signal(SIGINT, sigIntHandler) == SIG_ERR)
     {
         perror("signal");
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
 
-    /* prepare socket */
-    if ((socket_listen = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-    {
-        perror("socket");
-        return EXIT_FAILURE;
-    }
-
-    if (setsockopt(socket_listen, SOL_SOCKET, SO_REUSEADDR,
-                &tr, sizeof(int)) == -1)
-    {
-        perror("setsockopt");
-        return EXIT_FAILURE;
-    }
-
-    bzero(&serveraddr, sizeof(serveraddr));
-    serveraddr.sin_family = AF_INET;
-    serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serveraddr.sin_port = htons(port);
-
-    if (bind(socket_listen, (struct sockaddr *)&serveraddr,
-                sizeof(serveraddr)) < 0)
-    {
-        perror("bind");
-        return EXIT_FAILURE;
-    }
-
-    if (listen(socket_listen, QUEUE_LEN) < 0)
-    {
-        perror("listen");
-        return EXIT_FAILURE;
-    }
+    socket_listen = setup_socket(port);
 
     /* wait for connections */
-    for(;;)
+    for (;;)
     {
         if ((socket_conn = accept(socket_listen, NULL, NULL)) < 0)
         {
             perror("accept");
-            return EXIT_FAILURE;
+            exit(EXIT_FAILURE);
         }
-
-        /* handle connections */
-        if (recvline(socket_conn, buffer, MAX_STR_LEN) < 0)
-        {
-            fprintf(stderr, "Could not read line. Ignoring client. \n");
-            return EXIT_FAILURE;
-        }
-        else
-        {
-            for (cnt = 0; cnt < strlen(buffer); cnt++)
-            {
-                buffer[cnt] = toupper(buffer[cnt]);
-            }
-
-            if (sendbuf(socket_conn, buffer, strlen(buffer)) < 0)
-            {
-                fprintf(stderr, "Could not write line.\n");
-                return EXIT_FAILURE;
-            }
-        }
-
-        /* close connection to client */
-        if (close(socket_conn) < 0)
-        {
-            fprintf(stderr, "Error during close(2). \n");
-            return EXIT_FAILURE;
-        }
-        buffer[0] = '\0';
-        socket_conn = -1;
+        connection_handler(socket_conn);
     }
 
     return EXIT_SUCCESS;
@@ -144,6 +78,41 @@ static void sigIntHandler(int sig)
         close(socket_conn);
     }
     exit(EXIT_SUCCESS);
+}
+
+static void connection_handler(int conn_fd)
+{
+    char buffer[MAX_STR_LEN] = { '\0' };
+    unsigned cnt = -1;
+
+    /* handle connections */
+    if (recvline(socket_conn, buffer, MAX_STR_LEN) < 0)
+    {
+        fprintf(stderr, "Could not read line. Ignoring client. \n");
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        for (cnt = 0; cnt < strlen(buffer); cnt++)
+        {
+            buffer[cnt] = toupper(buffer[cnt]);
+        }
+
+        if (sendbuf(socket_conn, buffer, strlen(buffer)) < 0)
+        {
+            fprintf(stderr, "Could not write line.\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    /* close connection to client */
+    if (close(socket_conn) < 0)
+    {
+        fprintf(stderr, "Error during close(2). \n");
+        exit(EXIT_FAILURE);
+    }
+    buffer[0] = '\0';
+    socket_conn = -1;
 }
 
 static ssize_t recvline(int fd, char* buf, size_t buf_len)

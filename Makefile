@@ -7,10 +7,12 @@ RM := rm
 BIN_NOSSL := echo_server
 OBJ_NOSSL := $(patsubst %.c,%.o, \
     echo_server.c \
+    util_socket.c \
     )
 BIN_SSL := echo_server_ssl
 OBJ_SSL := $(patsubst %.c,%.o, \
     echo_server_ssl.c \
+	util_socket.c \
     )
 
 
