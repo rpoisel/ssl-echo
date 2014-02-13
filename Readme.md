@@ -1,7 +1,7 @@
 Example SSL Echo Server
 =======================
 
-This is an example demonstrating how to use OpenSSL in order to implement an echo server that communicates encrypted. 
+This is an example demonstrating how to use OpenSSL in order to implement an SSL enabled echo server.
 
 Installation
 ------------
