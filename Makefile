@@ -4,16 +4,26 @@ CFLAGS := $(shell dpkg-buildflags --get CFLAGS) \
 LDFLAGS := $(shell dpkg-buildflags --get LDFLAGS)
 RM := rm
 
-BIN := echo_server
-OBJ := $(patsubst %.c,%.o,$(wildcard *.c))
+BIN_NOSSL := echo_server
+OBJ_NOSSL := $(patsubst %.c,%.o, \
+    echo_server.c \
+    )
+BIN_SSL := echo_server_ssl
+OBJ_SSL := $(patsubst %.c,%.o, \
+    echo_server_ssl.c \
+    )
 
 
-all: $(BIN)
+all: $(BIN_NOSSL) $(BIN_SSL)
 
-$(BIN): $(OBJ)
-	$(CC) $(LDFLAGS) -o $(BIN) $(OBJ)
+$(BIN_NOSSL): $(OBJ_NOSSL)
+	$(CC) $(LDFLAGS) -o $(BIN_NOSSL) $(OBJ_NOSSL)
+
+$(BIN_SSL): LDFLAGS := $(LDFLAGS) -lssl
+$(BIN_SSL): $(OBJ_SSL)
+	$(CC) $(LDFLAGS) -o $(BIN_SSL) $(OBJ_SSL)
 
 .PHONY: clean
 
 clean:
-	-$(RM) $(BIN) $(OBJ)
+	-$(RM) $(BIN_NOSSL) $(OBJ_NOSSL) $(BIN_SSL) $(OBJ_SSL)
