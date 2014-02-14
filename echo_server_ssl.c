@@ -161,31 +161,31 @@ static void connection_handler()
         switch (SSL_get_error(ssl, ret))
         {
             case SSL_ERROR_ZERO_RETURN:
-            fprintf(stderr, "SSL_ERROR_ZERO_RETURNn");
-            break;
+                fprintf(stderr, "SSL_ERROR_ZERO_RETURNn");
+                break;
             case SSL_ERROR_WANT_READ:
-            fprintf(stderr, "SSL_ERROR_WANT_READn");
-            break;
+                fprintf(stderr, "SSL_ERROR_WANT_READn");
+                break;
             case SSL_ERROR_WANT_WRITE:
-            fprintf(stderr, "SSL_ERROR_WANT_WRITEn");
-            break;
+                fprintf(stderr, "SSL_ERROR_WANT_WRITEn");
+                break;
             case SSL_ERROR_WANT_CONNECT:
-            fprintf(stderr, "SSL_ERROR_WANT_CONNECTn");
-            break;
+                fprintf(stderr, "SSL_ERROR_WANT_CONNECTn");
+                break;
             case SSL_ERROR_WANT_ACCEPT:
-            fprintf(stderr, "SSL_ERROR_WANT_ACCEPTn");
-            break;
+                fprintf(stderr, "SSL_ERROR_WANT_ACCEPTn");
+                break;
             case SSL_ERROR_WANT_X509_LOOKUP:
-            fprintf(stderr, "SSL_ERROR_WANT_X509_LOOKUPn");
-            break;
+                fprintf(stderr, "SSL_ERROR_WANT_X509_LOOKUPn");
+                break;
             case SSL_ERROR_SYSCALL:
-            fprintf(stderr, "SSL_ERROR_SYSCALLn");
-            break;
+                fprintf(stderr, "SSL_ERROR_SYSCALLn");
+                break;
             case SSL_ERROR_SSL:
-            fprintf(stderr, "SSL_ERROR_SSLn");
-            break;
+                fprintf(stderr, "SSL_ERROR_SSLn");
+                break;
             default:
-            break;
+                break;
         }
         fprintf(stderr, "\n");
 #endif
