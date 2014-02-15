@@ -157,7 +157,6 @@ static void connection_handler()
     if (ret != 1)
     {
         fprintf(stderr, "SSL_accept failed: ");
-#if 0
         switch (SSL_get_error(ssl, ret))
         {
             case SSL_ERROR_ZERO_RETURN:
@@ -188,7 +187,6 @@ static void connection_handler()
                 break;
         }
         fprintf(stderr, "\n");
-#endif
         exit(EXIT_FAILURE);
     }
 
