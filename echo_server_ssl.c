@@ -145,6 +145,7 @@ static void connection_handler()
     unsigned cnt = -1;
     SSL* ssl; /* SSL descriptor */
     int ret = -1;
+    ssize_t num_bytes_read = 0;
 
     if (NULL == (ssl = SSL_new(ssl_ctx)))
     {
@@ -187,26 +188,40 @@ static void connection_handler()
                 break;
         }
         fprintf(stderr, "\n");
-        exit(EXIT_FAILURE);
+        SSL_free(ssl);
+        close(socket_conn);
+        return;
     }
 
     /* handle connections */
-    if (recvline(ssl, buffer, MAX_STR_LEN) < 0)
+    for (;;)
     {
-        fprintf(stderr, "Could not read line. Ignoring client. \n");
-        exit(EXIT_FAILURE);
-    }
-    else
-    {
-        for (cnt = 0; cnt < strlen(buffer); cnt++)
+        num_bytes_read = recvline(ssl, buffer, MAX_STR_LEN);
+        if (num_bytes_read < 0)
         {
-            buffer[cnt] = toupper(buffer[cnt]);
+            fprintf(stderr, "Could not read line. Ignoring client. \n");
+            /* exit(EXIT_FAILURE); */
+            break;
         }
-
-        if (sendbuf(ssl, buffer, strlen(buffer)) < 0)
+        else if (num_bytes_read == 0)
         {
-            fprintf(stderr, "Could not write line.\n");
-            exit(EXIT_FAILURE);
+            fprintf(stderr, "Client has closed connection. \n");
+            break;
+        }
+        else
+        {
+            fprintf(stderr, "Data received: %s", buffer);
+            for (cnt = 0; cnt < strlen(buffer); cnt++)
+            {
+                buffer[cnt] = toupper(buffer[cnt]);
+            }
+
+            if (sendbuf(ssl, buffer, strlen(buffer)) < 0)
+            {
+                fprintf(stderr, "Could not write line.\n");
+                /* exit(EXIT_FAILURE); */
+                break;
+            }
         }
     }
 

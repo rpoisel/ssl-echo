@@ -86,24 +86,36 @@ static void connection_handler()
 {
     char buffer[MAX_STR_LEN] = { '\0' };
     unsigned cnt = -1;
+    ssize_t num_bytes_read = 0;
 
     /* handle connections */
-    if (recvline(socket_conn, buffer, MAX_STR_LEN) < 0)
+    for (;;)
     {
-        fprintf(stderr, "Could not read line. Ignoring client. \n");
-        exit(EXIT_FAILURE);
-    }
-    else
-    {
-        for (cnt = 0; cnt < strlen(buffer); cnt++)
+        num_bytes_read = recvline(socket_conn, buffer, MAX_STR_LEN);
+        if (num_bytes_read < 0)
         {
-            buffer[cnt] = toupper(buffer[cnt]);
+            fprintf(stderr, "Could not read line. Ignoring client. \n");
+            /* exit(EXIT_FAILURE); */
+            break;
         }
-
-        if (sendbuf(socket_conn, buffer, strlen(buffer)) < 0)
+        else if (num_bytes_read == 0)
         {
-            fprintf(stderr, "Could not write line.\n");
-            exit(EXIT_FAILURE);
+            fprintf(stderr, "Client has closed connection. \n");
+            break;
+        }
+        else
+        {
+            for (cnt = 0; cnt < strlen(buffer); cnt++)
+            {
+                buffer[cnt] = toupper(buffer[cnt]);
+            }
+
+            if (sendbuf(socket_conn, buffer, strlen(buffer)) < 0)
+            {
+                fprintf(stderr, "Could not write line.\n");
+                /* exit(EXIT_FAILURE); */
+                break;
+            }
         }
     }
 
