@@ -32,8 +32,8 @@ OBJ_SSL := $(addprefix $(DIR_BUILD)/, $(SRC_SSL:.c=.o))
 all: $(BIN_NOSSL) $(BIN_SSL)
 
 $(DIR_BUILD)/.dirstamp:
-	mkdir $(DIR_BUILD)
-	touch $@
+	$(MKDIR) $(DIR_BUILD)
+	$(TOUCH) $@
 
 $(DIR_BUILD)/%.o : %.c
 	$(CC) -c $(CFLAGS) $< -o $@
