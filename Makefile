@@ -7,9 +7,6 @@ CC := gcc
 # all other systems
 CFLAGS := -W -Wall -g
 LDFLAGS := 
-#DIR_BUILD := build
-#DIR_BUILD := $(CURDIR)
-#DIR_BUILD := /tmp/build
 SRC_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 
 RM := rm
